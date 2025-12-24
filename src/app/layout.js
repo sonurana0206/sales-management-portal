@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Check karein kya ye login page hai
   const isLoginPage = pathname === "/";

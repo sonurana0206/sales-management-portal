@@ -35,16 +35,18 @@ export default function Header() {
       
       {/* --- BRANDING SECTION: Image Logo added here --- */}
       <div className="flex items-center gap-8">
-        <div className="relative border-r border-gray-100 pr-8 flex items-center">
-          <Image
-            src="/maven-logo.png" // Public folder se logo fetch karega
-            alt="Maven Jobs"
-            width={140}
-            height={20}
-            priority
-            className="object-contain" // Aspect ratio maintain karne ke liye
-          />
-        </div>
+        <div className="relative border-r border-gray-100 pr-6 flex items-center h-full">
+  <Image
+    src="/maven-logo.png" 
+    alt="Maven Jobs"
+    // Width aur Height ka ratio sahi rakhein (e.g., 140x40)
+    width={140}
+    height={40} 
+    priority
+    // 'p-0 m-0' se extra internal space khatam hogi
+    className="object-contain p-0 m-0" 
+  />
+</div>
 
         {/* Dynamic Title Section */}
         <div className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] hidden md:flex items-center gap-2">
