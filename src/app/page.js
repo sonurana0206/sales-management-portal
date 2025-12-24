@@ -1,88 +1,95 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Lock, User, ArrowRight } from "lucide-react";
+import Image from "next/image"; // Logo ke liye
+import { Lock, User, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("fse"); // Default role
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
     
-    // Role-based Navigation Logic
-    if (role === "admin") router.push("/admin");
-    else if (role === "hod") router.push("/hod");
-    else if (role === "manager") router.push("/manager");
-    else router.push("/fse");
+    // Yahan aap apna authentication logic jodd sakte hain
+    // Abhi ke liye ye default /fse par le jayega
+    router.push("/fse");
   };
 
   return (
     <div className="min-h-screen bg-[#103c7f] flex items-center justify-center p-6 font-['Calibri'] relative overflow-hidden">
       
-      {/* Background Decorative Element */}
+      {/* Background Decorative Elements */}
       <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-[#a1db40]/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
 
       <div className="bg-white/95 backdrop-blur-xl w-full max-w-md rounded-[40px] shadow-2xl p-10 relative z-10 border border-white/20">
         
-        {/* Branding Section */}
+        {/* --- BRANDING SECTION: Logo replace kiya gaya --- */}
         <div className="text-center mb-10">
-          <div className="bg-[#a1db40] w-20 h-20 rounded-[24px] flex items-center justify-center text-[#103c7f] mx-auto mb-6 shadow-lg shadow-[#a1db40]/20">
-            <ShieldCheck size={40} strokeWidth={2.5} />
+          <div className="flex items-center justify-center mb-4">
+             <Image
+                src="/maven-logo.png" 
+                alt="Maven Jobs"
+                width={180}
+                height={60} 
+                priority
+                className="object-contain" 
+              />
           </div>
-          <h1 className="text-3xl font-black text-[#103c7f] tracking-tight uppercase italic">Maven Jobs</h1>
-          <p className="text-gray-400 font-bold text-[10px] tracking-[0.3em] uppercase mt-2 italic">Enterprise Portal</p>
+          <p className="text-gray-400 font-bold text-[10px] tracking-[0.3em] uppercase mt-2 italic">
+            Enterprise Sales Portal
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          {/* Email Input */}
+        <form onSubmit={handleLogin} className="space-y-5">
+          
+          {/* USERNAME FIELD */}
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Email Address</label>
+            <label className="text-[10px] font-black text-[#103c7f] uppercase tracking-widest ml-2">Username</label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
               <input 
-                type="email" required placeholder="name@mavenjobs.com"
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#a1db40]/50 outline-none font-bold text-[#103c7f] transition-all"
-                onChange={(e) => setEmail(e.target.value)}
+                type="text" 
+                required 
+                placeholder="Enter your username"
+                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#a1db40]/50 outline-none font-bold text-[#103c7f] transition-all placeholder:text-gray-200"
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Role Selection (Temporary for setup) */}
+          {/* PASSWORD FIELD */}
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Select Access Level</label>
-            <div className="grid grid-cols-2 gap-3">
-              {['admin', 'hod', 'manager', 'fse'].map((r) => (
-                <button
-                  key={r} type="button"
-                  onClick={() => setRole(r)}
-                  className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
-                    role === r 
-                    ? 'bg-[#103c7f] text-[#a1db40] border-[#103c7f] shadow-md' 
-                    : 'bg-white text-gray-400 border-gray-100 hover:border-[#a1db40]'
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
+            <label className="text-[10px] font-black text-[#103c7f] uppercase tracking-widest ml-2">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+              <input 
+                type="password" 
+                required 
+                placeholder="••••••••"
+                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#a1db40]/50 outline-none font-bold text-[#103c7f] transition-all placeholder:text-gray-200"
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
           </div>
 
-          {/* Login Button */}
-          <button 
-            type="submit"
-            className="w-full bg-[#a1db40] text-[#103c7f] py-5 rounded-[22px] font-black tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-[#a1db40]/20 flex items-center justify-center gap-3 uppercase italic"
-          >
-            Enter System
-            <ArrowRight size={20} strokeWidth={3} />
-          </button>
+          {/* LOGIN BUTTON */}
+          <div className="pt-4">
+            <button 
+              type="submit"
+              className="w-full bg-[#a1db40] text-[#103c7f] py-5 rounded-[22px] font-black tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-[#a1db40]/20 flex items-center justify-center gap-3 uppercase italic"
+            >
+              Sign In
+              <ArrowRight size={20} strokeWidth={3} />
+            </button>
+          </div>
         </form>
 
         <div className="mt-10 text-center">
           <p className="text-gray-300 text-[9px] font-bold uppercase tracking-widest">
-            Authorized Personnel Only
+            Protected by Maven Jobs Security System
           </p>
         </div>
       </div>

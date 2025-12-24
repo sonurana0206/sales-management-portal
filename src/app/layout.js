@@ -30,8 +30,7 @@ export default function RootLayout({ children }) {
           {!isLoginPage && <Header />}
 
           {/* Page Content: Login page full screen hogi, baki content p-8 follow karega */}
-          <main className={`${isLoginPage ? "w-full" : "p-8 w-full"}`}>
-            {children}
+<main className={`${isLoginPage ? "w-full" : "pt-4 px-8 pb-8 w-full"}`}>            {children}
           </main>
         </div>
       </body>

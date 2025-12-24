@@ -474,21 +474,23 @@ const subStatusList = [
         </div>
 
         {/* ACTION BUTTONS */}
-        <div className="md:col-span-2 lg:col-span-3 flex gap-4 pt-8 mt-4 border-t">
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(false)}
-            className="flex-1 bg-gray-100 text-gray-500 py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-gray-200"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="flex-1 bg-[#103c7f] text-white py-4 rounded-xl font-black uppercase italic tracking-widest hover:bg-[#1a4da1]"
-          >
-            {selectedLead ? "Update Record" : "Save Record"}
-          </button>
-        </div>
+        <div className="md:col-span-2 lg:col-span-3 flex gap-3 pt-6 mt-4 border-t">
+  <button
+    type="button"
+    onClick={() => setIsModalOpen(false)}
+    // py-4 ko py-2.5 kiya aur text-xs add kiya
+    className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-gray-200 transition-all"
+  >
+    Cancel
+  </button>
+  <button
+    type="submit"
+    // font-black ko font-bold kiya aur py-2.5 use kiya
+    className="flex-1 bg-[#103c7f] text-white py-2.5 rounded-xl font-bold uppercase italic text-xs tracking-widest hover:bg-[#1a4da1] shadow-lg active:scale-95 transition-all"
+  >
+    {selectedLead ? "Update Record" : "Save Record"}
+  </button>
+</div>
 
       </form>
     </div>

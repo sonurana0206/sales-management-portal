@@ -3,7 +3,7 @@ import React from "react";
 import Image from "next/image"; // Image import kiya
 import { usePathname } from "next/navigation";
 import { Bell, UserCircle } from "lucide-react";
-
+import NotificationDropdown from "./NotificationDropdown"; 
 export default function Header() {
   const pathname = usePathname();
 
@@ -35,8 +35,7 @@ export default function Header() {
       
       {/* --- BRANDING SECTION: Image Logo added here --- */}
       <div className="flex items-center gap-8">
-        <div className="relative border-r border-gray-100 pr-6 flex items-center h-full">
-  <Image
+<div className="relative border-r border-gray-100 pr-6 flex items-center h-10 self-center">  <Image
     src="/maven-logo.png" 
     alt="Maven Jobs"
     // Width aur Height ka ratio sahi rakhein (e.g., 140x40)
@@ -58,10 +57,7 @@ export default function Header() {
       {/* --- ICONS & USER PROFILE SECTION --- */}
       <div className="flex items-center gap-8">
         {/* Notifications */}
-        <button className="relative p-2.5 bg-gray-50 rounded-2xl text-[#103c7f] hover:bg-blue-50 transition-all group">
-          <Bell size={20} strokeWidth={2.5} className="group-hover:rotate-12 transition-transform" />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white shadow-sm"></span>
-        </button>
+        <NotificationDropdown />
 
         {/* User Profile Info with Dynamic Name */}
         <div className="flex items-center gap-4 pl-6 border-l border-gray-100">
