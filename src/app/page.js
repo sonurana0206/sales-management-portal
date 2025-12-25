@@ -2,19 +2,55 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image"; // Logo ke liye
-import { Lock, User, ArrowRight } from "lucide-react";
+import { Lock, User, ArrowRight, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Yahan aap apna authentication logic jodd sakte hain
-    // Abhi ke liye ye default /fse par le jayega
-    router.push("/fse");
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Save user data to localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('session', JSON.stringify(data.session));
+
+        // Redirect based on role
+        const roleRoutes = {
+          'FSE': '/fse',
+          'MANAGER': '/manager',
+          'HOD': '/hod',
+          'ADMIN': '/admin'
+        };
+
+        const redirectPath = roleRoutes[data.user.role] || '/fse';
+        router.push(redirectPath);
+      } else {
+        setError(data.error || 'Login failed');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,17 +81,18 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-5">
           
-          {/* USERNAME FIELD */}
+          {/* EMAIL FIELD */}
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-[#103c7f] uppercase tracking-widest ml-2">Username</label>
+            <label className="text-[10px] font-black text-[#103c7f] uppercase tracking-widest ml-2">Email</label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
-              <input 
-                type="text" 
-                required 
-                placeholder="Enter your username"
+              <input
+                type="email"
+                required
+                placeholder="Enter your email"
                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-[#a1db40]/50 outline-none font-bold text-[#103c7f] transition-all placeholder:text-gray-200"
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </div>

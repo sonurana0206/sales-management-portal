@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   CheckCircle,
   Users,
@@ -10,33 +10,87 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-  const userName = "Monu";
+  const [mounted, setMounted] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const monthlyStats = {
-    month: "DECEMBER 2025",
-    totalVisits: 112,
-    individualVisits: 42,
-    totalOnboarded: 4,
-    mtdMp: "4/12",
-    avg: "3.2",
+  // Hydration fix
+  useEffect(() => { setMounted(true); }, []);
+
+  // Fetch dashboard data
+  useEffect(() => {
+    if (mounted) {
+      fetchDashboardData();
+    }
+  }, [mounted]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const session = JSON.parse(localStorage.getItem('session') || '{}');
+
+      if (!session.access_token) {
+        setError('No authentication token found. Please log in again.');
+        return;
+      }
+
+      const response = await fetch('/api/fse/dashboard', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (response.status === 401) {
+        setError('Session expired. Please log in again.');
+        // Clear localStorage and redirect to login
+        localStorage.removeItem('session');
+        localStorage.removeItem('user');
+        window.location.href = '/';
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setDashboardData(data.data);
+      } else {
+        setError(data.error || 'Failed to fetch dashboard data');
+      }
+    } catch (err) {
+      setError('Network error while fetching dashboard');
+      console.error('Dashboard fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const latestActivity = {
-    date: "20/12/2025",
-    total: 6,
-    individual: 1,
-    repeat: 5,
-    interested: 4,
-    onboarded: 1,
-  };
+  if (!mounted || loading) {
+    return (
+      <div className="p-6 bg-gray-50 font-['Calibri'] h-[calc(100vh-5rem)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#103c7f] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const latestLeads = [
-    { sn: 1, name: "Prem Spintex", status: "Interested", sub: "Call Back", color: "text-green-600 bg-green-50" },
-    { sn: 2, name: "Artex Home Fashion", status: "Interested", sub: "Call Back", color: "text-green-600 bg-green-50" },
-    { sn: 3, name: "Eleco Electrician", status: "Onboarded", sub: "Finalized", color: "text-white bg-green-700" },
-    { sn: 4, name: "Mista Home Decor", status: "Interested", sub: "Visit Done", color: "text-green-600 bg-green-50" },
-    { sn: 5, name: "Colour Band", status: "Reached Out", sub: "-", color: "text-blue-600 bg-blue-50" },
-  ];
+  if (error) {
+    return (
+      <div className="p-6 bg-gray-50 font-['Calibri'] h-[calc(100vh-5rem)] flex items-center justify-center">
+        <div className="text-center text-red-600">
+          <p className="text-lg font-semibold mb-2">Error loading dashboard</p>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userName = user.name || "User";
+
+  const { monthlyStats, latestActivity, latestLeads } = dashboardData;
 
   return (
     <div className="p-6 bg-gray-50 font-['Calibri'] h-[calc(100vh-5rem)] overflow-hidden">

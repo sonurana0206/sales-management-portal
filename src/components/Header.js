@@ -1,33 +1,36 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image"; // Image import kiya
 import { usePathname } from "next/navigation";
 import { Bell, UserCircle } from "lucide-react";
-import NotificationDropdown from "./NotificationDropdown"; 
+import NotificationDropdown from "./NotificationDropdown";
 export default function Header() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  // Hydration fix
+  useEffect(() => { setMounted(true); }, []);
+
+  // Get user data from localStorage
+  const user = mounted ? JSON.parse(localStorage.getItem('user') || '{}') : {};
 
   // --- 1. DYNAMIC DATA CONFIGURATION ---
   let roleLabel = "Field Sales Executive";
   let pageSubtitle = "DAILY WORK REPORT";
-  let userName = "Monu";
+  let userName = user.name || "User";
 
   if (pathname.startsWith("/admin")) {
     roleLabel = "System Administrator";
     pageSubtitle = "MASTER CONTROL PANEL";
-    userName = "Admin";
   } else if (pathname.startsWith("/hod")) {
     roleLabel = "Head of Department";
     pageSubtitle = "STRATEGY OVERSIGHT";
-    userName = "Diwakar";
   } else if (pathname.startsWith("/manager")) {
     roleLabel = "Sales Manager";
     pageSubtitle = "TEAM MANAGEMENT";
-    userName = "Monu";
   } else if (pathname.startsWith("/fse")) {
     roleLabel = "Field Sales Executive";
     pageSubtitle = "DAILY WORK REPORT";
-    userName = "Monu";
   }
 
   return (
@@ -60,21 +63,23 @@ export default function Header() {
         <NotificationDropdown />
 
         {/* User Profile Info with Dynamic Name */}
-        <div className="flex items-center gap-4 pl-6 border-l border-gray-100">
-          <div className="text-right">
-            <p className="text-xs font-black text-[#103c7f] leading-none uppercase tracking-tight">
-              {userName}
-            </p>
-            <p className="text-[9px] font-black text-[#a1db40] mt-1.5 uppercase tracking-widest leading-none">
-              {roleLabel}
-            </p>
-          </div>
-          <div className="bg-gradient-to-br from-blue-50 to-white p-0.5 rounded-full border border-blue-100 shadow-inner group cursor-pointer">
-            <div className="bg-white p-1 rounded-full text-[#103c7f] group-hover:text-[#a1db40] transition-colors">
-              <UserCircle size={34} strokeWidth={1.5} />
+        {mounted && (
+          <div className="flex items-center gap-4 pl-6 border-l border-gray-100">
+            <div className="text-right">
+              <p className="text-xs font-black text-[#103c7f] leading-none uppercase tracking-tight">
+                {userName}
+              </p>
+              <p className="text-[9px] font-black text-[#a1db40] mt-1.5 uppercase tracking-widest leading-none">
+                {roleLabel}
+              </p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-50 to-white p-0.5 rounded-full border border-blue-100 shadow-inner group cursor-pointer">
+              <div className="bg-white p-1 rounded-full text-[#103c7f] group-hover:text-[#a1db40] transition-colors">
+                <UserCircle size={34} strokeWidth={1.5} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </header>
   );
