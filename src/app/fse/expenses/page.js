@@ -14,7 +14,12 @@ export default function ExpenseList() {
     { id: 2, date: "2025-12-21", type: "STAY", amount: "1200", status: "PENDING (MANAGER)", notes: "Hotel Delhi Stay", bill: "hotel_rec.pdf" },
     { id: 3, date: "2025-12-22", type: "FOOD", amount: "300", status: "PENDING (MANAGER)", notes: "Lunch with Client", bill: null },
     { id: 4, date: "2025-12-25", type: "TRAVEL", amount: "500", status: "DRAFT", notes: "No notes added", bill: null },
-    { id: 5, date: "2025-12-25", type: "FOOD", amount: "650", status: "DRAFT", notes: "No notes added", bill: null },
+    
+    // 👇 NEW: REJECTED DATA ADDED (Red Badge dikhega)
+    { id: 6, date: "2025-12-26", type: "FOOD", amount: "1800", status: "REJECTED", notes: "Personal Dinner (Not Allowed)", bill: "dinner.jpg" },
+    
+    // 👇 NEW: CLARIFICATION DATA ADDED (Yellow Badge dikhega)
+    { id: 7, date: "2025-12-27", type: "TRAVEL", amount: "450", status: "CLARIFICATION REQ", notes: "Local Auto to Site", bill: null },
   ]);
 
   // Working State & Logic
@@ -118,12 +123,29 @@ export default function ExpenseList() {
                     <p className="text-xl font-black text-[#103c7f] italic leading-none">₹{exp.amount}</p>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border italic ${
-                      exp.status === 'APPROVED' ? 'bg-green-50 text-green-600 border-green-100' : 
-                      exp.status.includes('PENDING') ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-gray-50 text-gray-400'
-                    }`}>
-                      {exp.status}
-                    </span>
+                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border italic flex items-center justify-center gap-1.5 ${
+  // 1. APPROVED (Green)
+  exp.status === 'APPROVED' 
+    ? 'bg-green-50 text-green-600 border-green-100' 
+  // 2. REJECTED (Red)
+  : exp.status === 'REJECTED'
+    ? 'bg-red-50 text-red-600 border-red-100'
+  // 3. CLARIFICATION REQUIRED (Yellow)
+  : exp.status === 'CLARIFICATION REQ'
+    ? 'bg-yellow-50 text-yellow-600 border-yellow-100'
+  // 4. PENDING (Orange)
+  : exp.status.includes('PENDING') 
+    ? 'bg-orange-50 text-orange-600 border-orange-100' 
+  // 5. DRAFT (Gray)
+  : 'bg-gray-50 text-gray-400 border-gray-100'
+}`}>
+  {/* Icons for visual feedback */}
+  {exp.status === 'APPROVED' && <CheckCircle size={10} />}
+  {(exp.status === 'REJECTED' || exp.status === 'CLARIFICATION REQ') && <AlertCircle size={10} />}
+  {exp.status.includes('PENDING') && <Clock size={10} />}
+  
+  {exp.status}
+</span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     {exp.status === "DRAFT" ? (
