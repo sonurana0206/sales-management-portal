@@ -1,7 +1,7 @@
 import { supabaseServer } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
 
-export async function GET(request) {
+export async function POST(request) {
   try {
     // Authentication
     const authHeader = request.headers.get('authorization')
@@ -14,109 +14,140 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
+    // Get request body
+    const body = await request.json()
+    const { from, to } = body
+
     // Get current date in YYYY-MM-DD format
     const today = new Date().toISOString().split('T')[0]
     const currentMonth = new Date().getMonth() + 1
     const currentYear = new Date().getFullYear()
+    const startDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`
 
-    // Get monthly stats
-    const { data: monthlyData, error: monthlyError } = await supabaseServer
-      .from('clients')
-      .select('*')
-      .eq('user_id', user.id)
-      .gte('sourcing_date', `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`)
-
-    if (monthlyError) {
-      console.error('Monthly stats error:', monthlyError)
-    }
-
-    // Calculate monthly stats
-    const totalVisits = monthlyData?.length || 0
-    const onboarded = monthlyData?.filter(client => client.status === 'Onboarded').length || 0
-    const individualVisits = monthlyData?.filter(client => client.contact_mode === 'Visit').length || 0
-
-    // Get today's activity data
-    const { data: todayActivityData, error: todayActivityError } = await supabaseServer
-      .from('clients')
-      .select('*')
-      .eq('user_id', user.id)
-      .or(`sourcing_date.eq.${today},latest_contact_date.eq.${today}`)
-
-    if (todayActivityError) {
-      console.error('Today activity error:', todayActivityError)
-    }
-
-    // Calculate today's metrics based on business logic
-    const todayClients = todayActivityData || []
-
-    // Individual: sourcing_date is today (new leads)
-    const todayIndividual = todayClients.filter(client => client.sourcing_date === today).length
-
-    // Repeat: latest_contact_date is today AND sourcing_date != latest_contact_date (follow-ups)
-    const todayRepeat = todayClients.filter(client =>
-      client.latest_contact_date === today && client.sourcing_date !== client.latest_contact_date
-    ).length
-
-    // Total: unique clients with any activity today
-    const uniqueTodayClients = new Set(todayClients.map(c => c.client_id))
-    const todayTotal = uniqueTodayClients.size
-
-    // Interested: (sourcing_date OR latest_contact_date is today) AND status is Interested
-    const todayInterested = todayClients.filter(client => client.status === 'Interested').length
-
-    // Onboarded: (sourcing_date OR latest_contact_date is today) AND status is Onboarded
-    const todayOnboarded = todayClients.filter(client => client.status === 'Onboarded').length
-
-    // Check if DWR record exists for today
-    const { data: existingDwr, error: dwrCheckError } = await supabaseServer
+    // Get monthly stats from DWR
+    const { data: monthlyDwr, error: monthlyDwrError } = await supabaseServer
       .from('dwr_history')
       .select('*')
       .eq('user_id', user.id)
-      .eq('dwr_date', today)
-      .single()
+      .gte('dwr_date', startDate)
 
-    if (dwrCheckError && dwrCheckError.code !== 'PGRST116') { // PGRST116 = no rows found
-      console.error('DWR check error:', dwrCheckError)
+    if (monthlyDwrError) {
+      console.error('Monthly DWR error:', monthlyDwrError)
     }
 
-    // Prepare DWR data
-    const dwrData = {
-      user_id: user.id,
-      dwr_date: today,
-      total_visit: todayTotal,
-      individual: todayIndividual,
-      repeat: todayRepeat,
-      interested: todayInterested,
-      onboarded: todayOnboarded
-    }
+    const monthlyTotalVisits = monthlyDwr?.reduce((sum, d) => sum + (parseInt(d.total_visit) || 0), 0) || 0
+    const monthlyIndividualVisits = monthlyDwr?.reduce((sum, d) => sum + (parseInt(d.individual) || 0), 0) || 0
+    const monthlyOnboarded = monthlyDwr?.reduce((sum, d) => sum + (parseInt(d.onboarded) || 0), 0) || 0
 
-    if (existingDwr) {
-      // Update existing DWR record
-      const { error: updateError } = await supabaseServer
+    // Get DWR for display
+    let displayDwr;
+    if (from && to) {
+      // Sum for date range
+      const { data: rangeDwr, error: rangeError } = await supabaseServer
         .from('dwr_history')
-        .update(dwrData)
+        .select('*')
         .eq('user_id', user.id)
-        .eq('dwr_date', today)
+        .gte('dwr_date', from)
+        .lte('dwr_date', to)
 
-      if (updateError) {
-        console.error('DWR update error:', updateError)
+      if (rangeError) {
+        console.error('Range DWR error:', rangeError)
+      }
+
+      displayDwr = {
+        dwr_date: to,
+        total_visit: rangeDwr?.reduce((sum, d) => sum + (parseInt(d.total_visit) || 0), 0) || 0,
+        individual: rangeDwr?.reduce((sum, d) => sum + (parseInt(d.individual) || 0), 0) || 0,
+        repeat: rangeDwr?.reduce((sum, d) => sum + (parseInt(d.repeat) || 0), 0) || 0,
+        interested: rangeDwr?.reduce((sum, d) => sum + (parseInt(d.interested) || 0), 0) || 0,
+        not_interested: rangeDwr?.reduce((sum, d) => sum + (parseInt(d.not_interested) || 0), 0) || 0,
+        reached_out: rangeDwr?.reduce((sum, d) => sum + (parseInt(d.reached_out) || 0), 0) || 0,
+        onboarded: rangeDwr?.reduce((sum, d) => sum + (parseInt(d.onboarded) || 0), 0) || 0
       }
     } else {
-      // Insert new DWR record
-      const { error: insertError } = await supabaseServer
+      // Get latest DWR record
+      const { data: latestDwrData, error: latestDwrError } = await supabaseServer
         .from('dwr_history')
-        .insert(dwrData)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('dwr_date', { ascending: false })
+        .limit(1)
 
-      if (insertError) {
-        console.error('DWR insert error:', insertError)
+      if (latestDwrError) {
+        console.error('Latest DWR error:', latestDwrError)
+      }
+
+      const latestDwr = latestDwrData?.[0] || null
+      displayDwr = latestDwr || {
+        dwr_date: today,
+        total_visit: 0,
+        individual: 0,
+        repeat: 0,
+        interested: 0,
+        not_interested: 0,
+        onboarded: 0,
+        reached_out: 0
       }
     }
 
-    // Get all recent leads
+    // Get total clients count
+    const { count: totalClients, error: countError } = await supabaseServer
+      .from('clients')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+
+    if (countError) {
+      console.error('Total clients count error:', countError)
+    }
+
+    // Get total onboarded count
+    const { count: totalOnboarded, error: onboardError } = await supabaseServer
+      .from('clients')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', 'Onboarded')
+
+    if (onboardError) {
+      console.error('Total onboarded count error:', onboardError)
+    }
+
+    // Get total visits count
+    const { count: totalVisitsEver, error: visitsError } = await supabaseServer
+      .from('clients')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('contact_mode', 'VISIT')
+
+    if (visitsError) {
+      console.error('Total visits count error:', visitsError)
+    }
+
+    // Get projection counts
+    const projections = {};
+    const projectionTypes = ["WP > 50", "WP < 50", "MP > 50", "MP < 50"];
+    const projectionKeys = ["wpGreater50", "wpLess50", "mpGreater50", "mpLess50"];
+
+    for (let i = 0; i < projectionTypes.length; i++) {
+      const { count, error } = await supabaseServer
+        .from('clients')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('projection', projectionTypes[i]);
+
+      if (error) {
+        console.error(`Projection count error for ${projectionTypes[i]}:`, error);
+      }
+
+      projections[projectionKeys[i]] = count || 0;
+    }
+
+    // Get clients with activity on the latest DWR date
+    const latestDwrDate = displayDwr.dwr_date || today
     const { data: recentLeads, error: leadsError } = await supabaseServer
       .from('clients')
       .select('*')
       .eq('user_id', user.id)
+      .or(`sourcing_date.eq.${latestDwrDate},latest_contact_date.eq.${latestDwrDate}`)
       .order('created_at', { ascending: false })
 
     if (leadsError) {
@@ -132,25 +163,29 @@ export async function GET(request) {
       color: getStatusColor(lead.status)
     })) || []
 
-    // Calculate average (this might need adjustment based on business logic)
-    const avg = totalVisits > 0 ? (onboarded / totalVisits * 10).toFixed(1) : '0.0'
 
     const dashboardData = {
+      totalClients: totalClients || 0,
+      totalOnboarded: totalOnboarded || 0,
+      totalVisits: totalVisitsEver || 0,
+      projections: projections,
       monthlyStats: {
         month: new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase(),
-        totalVisits: totalVisits,
-        individualVisits: individualVisits,
-        totalOnboarded: onboarded,
-        mtdMp: `${onboarded}/${totalVisits}`, // Onboarded/Total
-        avg: avg
+        totalVisits: monthlyTotalVisits,
+        individualVisits: monthlyIndividualVisits,
+        totalOnboarded: monthlyOnboarded,
+        mtdMp: monthlyTotalVisits > 0 ? `${monthlyOnboarded}/${monthlyTotalVisits}` : '0/0',
+        avg: monthlyTotalVisits > 0 ? (monthlyOnboarded / monthlyTotalVisits * 10).toFixed(1) : '0.0'
       },
       latestActivity: {
-        date: new Date().toLocaleDateString('en-GB'), // DD/MM/YYYY format
-        total: dwrData.total_visit,
-        individual: dwrData.individual,
-        repeat: dwrData.repeat,
-        interested: dwrData.interested,
-        onboarded: dwrData.onboarded
+        date: displayDwr.dwr_date ? new Date(displayDwr.dwr_date).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'), // DD/MM/YYYY format
+        total: displayDwr.total_visit || 0,
+        individual: displayDwr.individual || 0,
+        repeat: displayDwr.repeat || 0,
+        interested: displayDwr.interested || 0,
+        notInterested: displayDwr.not_interested || 0,
+        reachedOut: displayDwr.reached_out || 0,
+        onboarded: displayDwr.onboarded || 0
       },
       latestLeads: formattedLeads
     }

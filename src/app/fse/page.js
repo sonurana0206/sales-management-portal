@@ -10,24 +10,93 @@ export default function FSEDashboard() {
   const [mounted, setMounted] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [latestDate, setLatestDate] = useState("");
 
   useEffect(() => { setMounted(true); }, []);
 
-  // Mock Data
+  // Get current month abbreviation
+  const currentMonth = new Date().toLocaleString('default', { month: 'short' }).toUpperCase();
+
+  // Initial stats with defaults
   const [stats, setStats] = useState({
-    global: { totalClients: 1250, totalOnboard: 450, totalVisits: 3200 },
-    monthly: { visitTarget: "120/150", individualVisits: 85, onboardMtd: "12/20", avgVisit: 4.2 },
-    projections: { mpLess50: 15, mpGreater50: 8, wpLess50: 22, wpGreater50: 12 },
-    dynamicMetrics: { total: 12, individual: 8, repeat: 4, interested: 5, notInterested: 2, reachedOut: 15, onboard: 3 },
-    clients: [
-      { name: "Tech Corp Solutions", status: "Interested", sub: "WP > 50", color: "bg-green-100 text-green-700" },
-      { name: "Global Logistics Ltd", status: "Onboarded", sub: "MP < 50", color: "bg-blue-100 text-[#103c7f]" },
-      { name: "Pioneer Manufacturing", status: "Reached Out", sub: "WP < 50", color: "bg-gray-100 text-gray-700" },
-      { name: "Apex Retailers", status: "Not Interested", sub: "MP > 50", color: "bg-red-100 text-red-700" },
-      { name: "Innova Soft", status: "Interested", sub: "WP > 50", color: "bg-green-100 text-green-700" },
-      { name: "Modern Services", status: "Onboarded", sub: "WP > 50", color: "bg-blue-100 text-[#103c7f]" },
-    ]
+    global: { totalClients: 0, totalOnboard: 0, totalVisits: 0 },
+    monthly: { visitTarget: 0 , individualVisits: 0, onboardMtd: "0/0", avgVisit: 0 },
+    projections: { mpLess50: 0, mpGreater50: 0, wpLess50: 0, wpGreater50: 0 },
+    dynamicMetrics: { total: 0, individual: 0, repeat: 0, interested: 0, notInterested: 0, reachedOut: 0, onboard: 0 },
+    clients: []
   });
+
+  // Fetch dashboard data
+  useEffect(() => {
+    if (mounted) {
+      fetchDashboard();
+    }
+  }, [mounted]);
+
+  const fetchDashboard = async (from = '', to = '') => {
+    try {
+      const session = JSON.parse(localStorage.getItem('session') || '{}');
+      const response = await fetch('/api/fse/dashboard', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ from, to })
+      });
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Dashboard API response:', data);
+      console.log('Data success:', data.success);
+
+      if (data.success) {
+        console.log('Setting stats with data');
+        setStats(prev => ({
+          ...prev,
+          global: {
+            ...prev.global,
+            totalClients: data.data.totalClients,
+            totalOnboard: data.data.totalOnboarded,
+            totalVisits: data.data.totalVisits
+          },
+          monthly: {
+            visitTarget: data.data.monthlyStats.totalVisits,
+            individualVisits: data.data.monthlyStats.individualVisits,
+            onboardMtd: data.data.monthlyStats.mtdMp,
+            avgVisit: data.data.monthlyStats.avg
+          },
+          projections: {
+            mpLess50: data.data.projections.mpLess50,
+            mpGreater50: data.data.projections.mpGreater50,
+            wpLess50: data.data.projections.wpLess50,
+            wpGreater50: data.data.projections.wpGreater50
+          },
+          dynamicMetrics: {
+            ...prev.dynamicMetrics,
+            total: data.data.latestActivity.total,
+            individual: data.data.latestActivity.individual,
+            repeat: data.data.latestActivity.repeat,
+            interested: data.data.latestActivity.interested,
+            notInterested: data.data.latestActivity.notInterested,
+            reachedOut: data.data.latestActivity.reachedOut,
+            onboard: data.data.latestActivity.onboarded
+          },
+          clients: data.data.latestLeads.map(lead => ({
+            name: lead.name,
+            status: lead.status,
+            sub: lead.sub,
+            color: lead.color
+          }))
+        }));
+        setLatestDate(data.data.latestActivity.date);
+      }
+    } catch (err) {
+      console.error('Fetch dashboard error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!mounted) return null;
 
@@ -49,16 +118,16 @@ export default function FSEDashboard() {
           {/* 1. Month Indicator */}
           <div className="bg-[#103c7f] rounded-xl flex flex-col items-center justify-center w-12 shadow-sm shrink-0 py-2 hidden lg:flex">
             <div className="flex flex-col items-center leading-[1.1] text-white font-black text-[16px] uppercase tracking-tighter">
-              {"DEC".split("").map((char, i) => <span key={i}>{char}</span>)}
+              {currentMonth.split("").map((char, i) => <span key={i}>{char}</span>)}
             </div>
           </div>
 
           {/* 2. KPIs (Fixed: Removed min-w-300px from children to prevent overflow) */}
           <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3"> 
-            <CompactMonthCard label="Total Visit" value="120/150" icon={<TrendingUp size={16} />} />
-            <CompactMonthCard label="Individual Visit" value="85" icon={<Users size={16} />} />
-            <CompactMonthCard label="Onboard (MTD/MP)" value="12/20" icon={<CheckCircle size={16} />} />
-            <CompactMonthCard label="Avg Visit" value="4.2" icon={<Activity size={16} />} />
+            <CompactMonthCard label="Total Visit" value={stats.monthly.visitTarget} icon={<TrendingUp size={16} />} />
+            <CompactMonthCard label="Individual Visit" value={stats.monthly.individualVisits} icon={<Users size={16} />} />
+            <CompactMonthCard label="Onboard (MTD/MP)" value={stats.monthly.onboardMtd} icon={<CheckCircle size={16} />} />
+            <CompactMonthCard label="Avg Visit" value="pending" icon={<Activity size={16} />} />
           </div>
 
           {/* 3. Projection Card */}
@@ -84,11 +153,12 @@ export default function FSEDashboard() {
         <div className="bg-white rounded-2xl p-2 px-4 border border-gray-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-[#103c7f] shrink-0">
             <h3 className="font-black text-sm uppercase tracking-wide">Latest Visit</h3>
+            {latestDate && <span className="text-xs font-bold text-gray-500">({latestDate})</span>}
           </div>
           <div className="flex items-center gap-4 flex-wrap">
             <DateInput label="From" value={fromDate} onChange={setFromDate} />
             <DateInput label="To" value={toDate} onChange={setToDate} />
-            <button className="bg-[#103c7f] text-white p-2.5 rounded-xl hover:bg-[#1a4da1] transition-all"><Filter size={16} /></button>
+            <button onClick={() => fetchDashboard(fromDate, toDate)} className="bg-[#103c7f] text-white p-2.5 rounded-xl hover:bg-[#1a4da1] transition-all"><Filter size={16} /></button>
           </div>
         </div>
 
@@ -110,7 +180,7 @@ export default function FSEDashboard() {
              <h3 className="text-[#103c7f] font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2">
                 <Users size={14} className="text-[#a1db40]" /> Client Details
              </h3>
-             <span className="text-[8px] font-bold text-gray-400 uppercase italic">{stats.clients.length * 4} Records</span>
+             <span className="text-[8px] font-bold text-gray-400 uppercase italic">{stats.clients.length} Records</span>
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-white">
@@ -123,7 +193,7 @@ export default function FSEDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {[...stats.clients, ...stats.clients, ...stats.clients, ...stats.clients].map((client, idx) => (
+                {stats.clients.map((client, idx) => (
                   <tr key={idx} className="hover:bg-blue-50/40 transition-all group">
                     <td className="px-6 py-3 text-xs font-bold text-slate-700">{client.name} </td>
                     <td className="px-6 py-3 text-center">

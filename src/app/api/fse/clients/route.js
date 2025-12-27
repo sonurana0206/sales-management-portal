@@ -71,6 +71,9 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
+    // Update DWR after creating client
+    await updateDwrForUser(user.id)
+
     return NextResponse.json({
       success: true,
       data: data,
@@ -104,8 +107,6 @@ export async function GET(request) {
     const category = searchParams.get('category')
     const state = searchParams.get('state')
     const status = searchParams.get('status')
-    const limit = parseInt(searchParams.get('limit')) || 50
-    const offset = parseInt(searchParams.get('offset')) || 0
 
     // Build query
     let query = supabaseServer
@@ -113,7 +114,6 @@ export async function GET(request) {
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
 
     // Apply filters
     if (category) query = query.eq('category', category)
@@ -132,9 +132,7 @@ export async function GET(request) {
 
     return NextResponse.json({
       success: true,
-      data: data || [],
-      limit: limit,
-      offset: offset
+      data: data || []
     })
 
   } catch (error) {
@@ -247,6 +245,9 @@ export async function PUT(request) {
       }, { status: 500 })
     }
 
+    // Update DWR after updating client
+    await updateDwrForUser(user.id)
+
     return NextResponse.json({
       success: true,
       message: 'Client updated successfully',
@@ -264,5 +265,71 @@ export async function PUT(request) {
       error: 'Internal server error',
       details: error.message
     }, { status: 500 })
+  }
+}
+
+// Helper function to update DWR for user
+async function updateDwrForUser(userId) {
+  try {
+    const today = new Date().toISOString().split('T')[0]
+
+    // Get today's activity data
+    const { data: todayActivityData, error: todayActivityError } = await supabaseServer
+      .from('clients')
+      .select('*')
+      .eq('user_id', userId)
+      .or(`sourcing_date.eq.${today},latest_contact_date.eq.${today}`)
+
+    if (todayActivityError) {
+      console.error('Today activity error:', todayActivityError)
+      return
+    }
+
+    // Calculate today's metrics
+    const todayClients = todayActivityData || []
+    const todayIndividual = todayClients.filter(client => client.sourcing_date === today).length
+    const todayRepeat = todayClients.filter(client =>
+      client.latest_contact_date === today && client.sourcing_date !== client.latest_contact_date
+    ).length
+    const uniqueTodayClients = new Set(todayClients.map(c => c.client_id))
+    const todayTotal = uniqueTodayClients.size
+    const todayInterested = todayClients.filter(client => client.status === 'Interested').length
+    const todayNotInterested = todayClients.filter(client => client.status === 'Not Interested').length
+    const todayReachedOut = todayClients.filter(client => client.status === 'Reached Out').length
+    const todayOnboarded = todayClients.filter(client => client.status === 'Onboarded').length
+
+    // Check if DWR record exists
+    const { data: existingDwr, error: dwrCheckError } = await supabaseServer
+      .from('dwr_history')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('dwr_date', today)
+      .single()
+
+    const dwrData = {
+      user_id: userId,
+      dwr_date: today,
+      total_visit: todayTotal,
+      individual: todayIndividual,
+      repeat: todayRepeat,
+      interested: todayInterested,
+      not_interested: todayNotInterested,
+      reached_out: todayReachedOut,
+      onboarded: todayOnboarded
+    }
+
+    if (existingDwr) {
+      await supabaseServer
+        .from('dwr_history')
+        .update(dwrData)
+        .eq('user_id', userId)
+        .eq('dwr_date', today)
+    } else {
+      await supabaseServer
+        .from('dwr_history')
+        .insert(dwrData)
+    }
+  } catch (error) {
+    console.error('DWR update error:', error)
   }
 }
