@@ -34,9 +34,10 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   else if (isManager) {
     menuItems = [
       { name: "Team Dashboard", href: "/manager", icon: <LayoutGrid size={20} /> },
+      { name: "FSE Tracking", href: "/manager/team-leads", icon: <Users size={20} /> },
       { name: "My Expenses", href: "/manager/expenses", icon: <Wallet size={20} /> },
       { name: "Expense Approval", href: "/manager/approvals", icon: <FileText size={20} /> },
-      { name: "FSE Tracking", href: "/manager/team-leads", icon: <Users size={20} /> },
+      
     ];
   } 
   else if (isFSE) {
@@ -57,7 +58,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
       onMouseLeave={() => setIsCollapsed(true)}  // Collapse on Leave
       /* --- HOVER LOGIC END --- */
       className={`bg-[#103c7f] text-white min-h-screen flex flex-col fixed left-0 top-0 h-full z-50 font-['Calibri'] border-r border-white/10 shadow-2xl transition-all duration-500 ease-in-out cursor-default ${
-        isCollapsed ? "w-22" : "w-72"
+        isCollapsed ? "w-18" : "w-72"
       }`}
     >
       {/* Navigation Menu */}
@@ -69,7 +70,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
               key={item.name} 
               href={item.href} 
               className={`flex items-center rounded-2xl transition-all duration-300 group relative ${
-                isCollapsed ? "justify-center p-4" : "justify-between px-6 py-4"
+                isCollapsed ? "justify-center p-2" : "justify-between px-6 py-4"
               } ${
                 isActive ? "bg-white/10 text-white shadow-lg" : "text-blue-100/60 hover:text-white hover:bg-white/5"
               }`}

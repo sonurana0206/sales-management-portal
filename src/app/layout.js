@@ -23,14 +23,14 @@ export default function RootLayout({ children }) {
 
         <div
           className={`flex-1 flex flex-col h-full overflow-hidden transition-all duration-500 ease-in-out ${
-    isLoginPage ? "ml-0" : (isCollapsed ? "ml-22" : "ml-72")
+    isLoginPage ? "ml-0" : (isCollapsed ? "ml-14" : "ml-72")
           }`}
         >
           {/* Agar Login page nahi hai, tabhi Header dikhao */}
           {!isLoginPage && <Header />}
 
           {/* Page Content: Login page full screen hogi, baki content p-8 follow karega */}
-<main className={`${isLoginPage ? "w-full" : "pt-4 px-8 pb-8 w-full"}`}>            {children}
+<main className={`${isLoginPage ? "w-full" : "pt-4 px-6 pb-0 w-full"}`}>            {children}
           </main>
         </div>
       </body>

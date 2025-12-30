@@ -27,12 +27,18 @@ export default function ExpenseList() {
 
   const handleSave = (e) => {
     e.preventDefault();
-    const newExpense = { ...formData, id: expenses.length + 1, status: "DRAFT" };
+    
+    // 👇 FIX: Unique ID generate karne ke liye Date.now() use karein
+    const newExpense = { 
+      ...formData, 
+      id: Date.now(), // Ye hamesha unique number dega (e.g. 1703692...)
+      status: "DRAFT" 
+    };
+
     setExpenses([...expenses, newExpense]);
     setIsModalOpen(false);
     setFormData({ date: "", type: "TRAVEL", amount: "", notes: "", bill: null });
   };
-
   const submitToManager = (id) => {
     setExpenses(expenses.map(exp => 
       exp.id === id ? { ...exp, status: "PENDING (MANAGER)" } : exp
@@ -40,10 +46,10 @@ export default function ExpenseList() {
   };
 
   return (
-    <div className="flex flex-col h-full font-['Calibri'] w-full">
+    <div className="h-screen bg-[#f8fafc] w-full font-['Calibri'] p-2 flex flex-col overflow-hidden">
       
      {/* --- HEADER: Heading (Left) | Grouped Filter & Button (Right) --- */}
-<div className="flex justify-between items-end mb-6 shrink-0 transition-all duration-500 ease-in-out">
+<div className="flex justify-between items-end mb-4 shrink-0 transition-all duration-500 ease-in-out">
   
   {/* LEFT: Heading Section */}
   <div>
@@ -93,23 +99,23 @@ export default function ExpenseList() {
 </div>
 
       {/* TABLE: Internal Scroll & Navy Header */}
-      <div className="bg-white shadow-sm rounded-[32px] border border-gray-100 overflow-hidden flex flex-col flex-1 max-h-[72vh]">
+     <div className="bg-white shadow-sm rounded-lg border border-gray-100 overflow-hidden flex flex-col flex-1 max-h-[74vh]">
         <div className="overflow-y-auto flex-1 custom-scrollbar">
           <table className="w-full text-left border-collapse relative">
             <thead className="sticky top-0 z-10 bg-[#103c7f] text-white">
-              <tr className="text-[11px] uppercase font-black tracking-widest">
-                <th className="p-6 border-b border-white/10">Date</th>
-                <th className="p-6 border-b border-white/10">Details</th>
-                <th className="p-6 text-center border-b border-white/10">Amount</th>
-                <th className="p-6 text-center border-b border-white/10">Status</th>
-                <th className="p-6 text-center border-b border-white/10">Action</th>
+              <tr className="text-[12px] uppercase font-black tracking-widest">
+                <th className="px-4 py-3 border-b border-white/10">Date</th>
+                <th className="px-4 py-3 border-b border-white/10">Details</th>
+                <th className="px-4 py-3 text-center border-b border-white/10">Amount</th>
+                <th className="px-4 py-3 text-center border-b border-white/10">Status</th>
+                <th className="px-4 py-3 text-center border-b border-white/10">Action</th>
               </tr>
             </thead>
             <tbody className="text-sm">
   {expenses
     .filter(exp => filterDate === "" || exp.date === filterDate) // Filter logic
     .map((exp) => (
-                <tr key={exp.id} className="border-b border-gray-50 hover:bg-blue-50/20 transition-all">
+                <tr key={exp.id} className="border-b border-gray-50 hover:bg-blue-50/40 transition-all">
                   <td className="px-6 py-4 font-black text-gray-500">{exp.date}</td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">

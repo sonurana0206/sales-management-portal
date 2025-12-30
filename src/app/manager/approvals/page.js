@@ -1,154 +1,196 @@
 "use client";
 import { useState } from "react";
-import { Check, X, Eye, ShieldCheck, UserCircle, Search, Download, Clock, FileText } from "lucide-react";
+import { 
+  Check, X, ShieldCheck, UserCircle, Search, Download, 
+  Clock, FileText, CheckCircle, ArrowRightCircle, Building2 
+} from "lucide-react";
 
 export default function ManagerApprovals() {
   const [approvals] = useState([
     { 
-      id: 1, 
-      name: "Rahul Verma", 
-      role: "Field Sales Executive", 
-      category: "Travel", 
-      notes: "Cab to Airport for Mumbai Client visit", 
-      amount: "2,400", 
-      date: "24-12-2025", 
-      status: "Pending Review", 
-      img: "bg-blue-100 text-blue-600" 
+      id: 1, name: "Rahul Verma", role: "Field Sales Executive", category: "Travel", 
+      notes: "Cab to Airport for Mumbai Client visit", amount: "2,400", date: "24-12-2025", 
+      status: "Sent to HR", img: "bg-blue-100 text-blue-600" 
     },
     { 
-      id: 2, 
-      name: "Priya Das", 
-      role: "Field Sales Executive", 
-      category: "Food", 
-      notes: "Lunch with Maven Jobs HR Team", 
-      amount: "850", 
-      date: "24-12-2025", 
-      status: "Pending Review", 
-      img: "bg-purple-100 text-purple-600" 
+      id: 2, name: "Priya Das", role: "Field Sales Executive", category: "Food", 
+      notes: "Lunch with Maven Jobs HR Team", amount: "850", date: "24-12-2025", 
+      status: "Pending Review", img: "bg-purple-100 text-purple-600" 
     },
     { 
-      id: 3, 
-      name: "Vikram Singh", 
-      role: "Field Sales Executive", 
-      category: "Stay", 
-      notes: "Hotel Lemon Tree (2 Nights)", 
-      amount: "4,200", 
-      date: "23-12-2025", 
-      status: "Pending Review", 
-      img: "bg-green-100 text-green-600" 
+      id: 3, name: "Vikram Singh", role: "Field Sales Executive", category: "Stay", 
+      notes: "Hotel Lemon Tree (2 Nights)", amount: "4,200", date: "23-12-2025", 
+      status: "Pending Review", img: "bg-green-100 text-green-600" 
     },
     { 
-      id: 4, 
-      name: "Anjali Mehta", 
-      role: "Field Sales Executive", 
-      category: "Travel", 
-      notes: "Local Auto charges (No bill)", 
-      amount: "350", 
-      date: "22-12-2025", 
-      status: "Clarification Req", 
-      img: "bg-orange-100 text-orange-600" 
-    }
+      id: 4, name: "Anjali Mehta", role: "Field Sales Executive", category: "Travel", 
+      notes: "Local Auto charges (No bill)", amount: "350", date: "22-12-2025", 
+      status: "Clarification Req", img: "bg-orange-100 text-orange-600" 
+    },
+    { 
+      id: 5, name: "Rohit Kumar", role: "Field Sales Executive", category: "Fuel", 
+      notes: "Bike Petrol (450km Travelled)", amount: "1,800", date: "21-12-2025", 
+      status: "Pending Review", img: "bg-red-100 text-red-600" 
+    },
+    
+    // 👇 NEW: APPROVED ROW (Now shows "Sent to HR")
+    { 
+      id: 11, name: "Suresh Raina", role: "Field Sales Executive", category: "Food", 
+      notes: "Team Lunch (Pre-approved)", amount: "1,200", date: "25-12-2025", 
+      status: "Sent to HR", img: "bg-emerald-100 text-emerald-600" 
+    },
+
+    { 
+      id: 6, name: "Sneha Gupta", role: "Field Sales Executive", category: "Food", 
+      notes: "Client Dinner with HOD Approval", amount: "2,500", date: "21-12-2025", 
+      status: "Pending Review", img: "bg-teal-100 text-teal-600" 
+    },
+    { 
+      id: 7, name: "Amit Sharma", role: "Field Sales Executive", category: "Travel", 
+      notes: "Flight Ticket (Del -> Blr)", amount: "6,500", date: "20-12-2025", 
+      status: "Pending Review", img: "bg-indigo-100 text-indigo-600" 
+    },
+    { 
+      id: 8, name: "Kavita Rao", role: "Field Sales Executive", category: "Misc", 
+      notes: "Stationery for Field Camp", amount: "450", date: "19-12-2025", 
+      status: "Clarification Req", img: "bg-pink-100 text-pink-600" 
+    },
+    { 
+      id: 9, name: "Arjun Reddy", role: "Field Sales Executive", category: "Stay", 
+      notes: "Hotel OYO (Emergency Stay)", amount: "1,200", date: "18-12-2025", 
+      status: "Pending Review", img: "bg-yellow-100 text-yellow-600" 
+    },
+    { 
+      id: 10, name: "Meera Nair", role: "Field Sales Executive", category: "Travel", 
+      notes: "Uber Intercity", amount: "1,100", date: "18-12-2025", 
+      status: "Pending Review", img: "bg-cyan-100 text-cyan-600" 
+    },
   ]);
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] pb-12 w-full font-['Calibri']">
-      
+<div className="h-[calc(100vh-4rem)] bg-[#f8fafc] w-full font-['Calibri'] p-2 flex flex-col overflow-hidden">      
       {/* HEADER SECTION */}
-      <div className="bg-white rounded-[24px] p-8 mb-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-5">
-          <div className="bg-[#103c7f] p-4 rounded-[20px] shadow-lg shadow-[#103c7f]/20">
-            <ShieldCheck size={28} className="text-[#a1db40]" strokeWidth={2.5}/>
+      <div className="bg-white rounded-[16px] p-4 mb-4 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="bg-[#103c7f] p-3 rounded-[14px] shadow-lg shadow-[#103c7f]/20">
+            <ShieldCheck size={24} className="text-[#a1db40]" strokeWidth={2.5}/>
           </div>
           <div>
-            <h1 className="text-3xl font-black text-[#103c7f] tracking-tight uppercase italic leading-none">
+            <h1 className="text-2xl font-black text-[#103c7f] tracking-tight uppercase italic leading-none">
               Team Approvals
             </h1>
-            <p className="text-gray-400 text-[10px] font-bold tracking-[0.2em] mt-2 uppercase flex items-center gap-2">
-               <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
+            <p className="text-gray-400 text-[10px] font-bold tracking-[0.2em] mt-1.5 uppercase flex items-center gap-2">
+               <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
                FSE Claims Queue
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-[20px] border border-gray-100">
-           <div className="flex items-center px-4 gap-3 border-r border-gray-200">
-             <Search size={18} className="text-gray-300"/>
-             <input type="text" placeholder="Search FSE..." className="bg-transparent text-[11px] font-bold text-[#103c7f] outline-none w-32" />
+        <div className="flex items-center gap-3 bg-gray-50 p-1.5 rounded-[14px] border border-gray-100">
+           <div className="flex items-center px-3 gap-2 border-r border-gray-200">
+             <Search size={16} className="text-gray-300"/>
+             <input type="text" placeholder="Search FSE..." className="bg-transparent text-[10px] font-bold text-[#103c7f] outline-none w-28" />
            </div>
-           <button className="bg-[#103c7f] text-[#a1db40] px-6 py-2.5 rounded-[14px] font-black text-[10px] uppercase tracking-widest shadow-md flex items-center gap-2">
-             <Download size={14} /> Report
+           <button className="bg-[#103c7f] text-[#a1db40] px-4 py-2 rounded-[10px] font-black text-[9px] uppercase tracking-widest shadow-md flex items-center gap-2 hover:bg-[#0d316a] transition-all">
+             <Download size={12} /> Report
            </button>
         </div>
       </div>
 
       {/* CLAIMS TABLE */}
-      <div className="bg-white shadow-xl shadow-gray-200/50 rounded-[32px] border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50/50 border-b text-[10px] uppercase font-black text-gray-400 tracking-[0.2em]">
+      <div className="bg-white shadow-md rounded-xl border border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0">
+        <div className="overflow-y-auto flex-1 custom-scrollbar">
+          <table className="w-full text-left border-collapse relative">
+            <thead className="sticky top-0 bg-[#103c7f] text-white z-10 text-[10px] uppercase font-black tracking-[0.1em]">
               <tr>
-                <th className="p-8">Field Executive</th>
-                <th className="p-8">Expense Category & Notes</th>
-                <th className="p-8">Amount</th>
-                <th className="p-8">Date</th>
-                <th className="p-8 text-center">Status</th>
-                <th className="p-8 text-center">Manager Action</th>
+                <th className="px-5 py-3.5">Field Executive</th>
+                <th className="px-5 py-3.5">Expense Category & Notes</th>
+                <th className="px-5 py-3.5 text-center">Amount</th>
+                <th className="px-5 py-3.5 text-center">Date</th>
+                <th className="px-5 py-3.5 text-center">Status</th>
+                <th className="px-5 py-3.5 text-center">Action</th>
               </tr>
             </thead>
+            
             <tbody className="text-sm">
               {approvals.map((item) => (
-                <tr key={item.id} className="border-b border-gray-50 hover:bg-blue-50/20 transition-all group">
-                  <td className="p-8">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors ${item.img}`}>
-                        <UserCircle size={28} strokeWidth={1.5} />
+                <tr key={item.id} className="border-b border-gray-50 hover:bg-blue-50 transition-all group">
+                  
+                  {/* Name Column */}
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${item.img}`}>
+                        <UserCircle size={22} strokeWidth={1.5} />
                       </div>
                       <div>
-                        <p className="font-black text-[#103c7f] text-base leading-none tracking-tight">{item.name}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase mt-1.5 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#a1db40]"></span>
-                          {item.role}
+                        <p className="font-black text-[#103c7f] text-sm leading-none tracking-tight">{item.name}</p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase mt-1 flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-[#a1db40]"></span> {item.role}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="p-8">
+                  
+                  {/* Details Column */}
+                  <td className="px-5 py-3">
                     <div className="flex flex-col">
-                        <span className="font-black text-gray-700 uppercase tracking-tight text-xs mb-1">
-                            {item.category}
-                        </span>
-                        <span className="text-xs font-bold text-gray-400 italic">
-                            "{item.notes}"
-                        </span>
+                        <span className="font-black text-gray-700 uppercase tracking-tight text-[11px] mb-0.5">{item.category}</span>
+                        <span className="text-[11px] font-bold text-gray-400 italic">"{item.notes}"</span>
                     </div>
                   </td>
-                  <td className="p-8">
-                    <p className="text-xl font-black text-[#103c7f] italic leading-none">₹{item.amount}</p>
-                    <p className="text-[8px] font-bold text-gray-300 mt-1 uppercase">INR</p>
+                  
+                  {/* Amount Column */}
+                  <td className="px-5 py-3 text-center">
+                    <p className="text-lg font-black text-[#103c7f] italic leading-none">₹{item.amount}</p>
                   </td>
-                  <td className="p-8 font-black text-gray-400 tabular-nums">
+                  
+                  {/* Date Column */}
+                  <td className="px-5 py-3 text-center font-black text-gray-400 text-[11px]">
                     {item.date}
                   </td>
-                  <td className="p-8 text-center">
-                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border italic flex items-center justify-center gap-2 w-fit mx-auto
-                      ${item.status === 'Clarification Req' 
-                        ? 'bg-yellow-50 text-yellow-600 border-yellow-100' 
-                        : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                  
+                  {/* Status Column (UPDATED LOGIC: "Sent to HR" is Blue/Indigo) */}
+                  <td className="px-5 py-3 text-center">
+                    <span className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border italic flex items-center justify-center gap-1.5 w-fit mx-auto
+                      ${item.status === 'Sent to HR' 
+                        ? 'bg-indigo-50 text-indigo-600 border-indigo-100' // Blue/Indigo for HR Handoff
+                        : item.status === 'Clarification Req' 
+                          ? 'bg-yellow-50 text-yellow-600 border-yellow-100' 
+                          : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                      
                       {item.status === 'Pending Review' && <Clock size={10} />}
+                      {/* Using Building Icon for HR */}
+                      {item.status === 'Sent to HR' && <Building2 size={10} />} 
                       {item.status}
                     </span>
                   </td>
-                  <td className="p-8">
-                    <div className="flex justify-center gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
-                      <button className="bg-green-50 text-green-600 p-3.5 rounded-2xl hover:bg-green-600 hover:text-white hover:scale-110 transition-all shadow-sm" title="Approve">
-                        <Check size={20} strokeWidth={3}/>
-                      </button>
-                      <button className="bg-red-50 text-red-600 p-3.5 rounded-2xl hover:bg-red-600 hover:text-white hover:scale-110 transition-all shadow-sm" title="Reject">
-                        <X size={20} strokeWidth={3}/>
-                      </button>
-                      <button className="bg-gray-100 text-[#103c7f] p-3.5 rounded-2xl hover:bg-[#103c7f] hover:text-white transition-all shadow-sm" title="View Bill Proof">
-                        <FileText size={20} strokeWidth={2}/> 
-                      </button>
-                    </div>
+                  
+                  {/* Action Column (UPDATED LOGIC: Shows "Forwarded" status) */}
+                  <td className="px-5 py-3 text-center">
+                    {item.status === "Sent to HR" ? (
+                      // Locked State - Shows Process Flow
+                      <div className="flex justify-center items-center gap-1 opacity-60">
+                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                           Manager
+                         </span>
+                         <ArrowRightCircle size={10} className="text-indigo-600" />
+                         <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">
+                           HR Dept
+                         </span>
+                      </div>
+                    ) : (
+                      // Active Buttons
+                      <div className="flex justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                        <button className="bg-green-50 text-green-600 p-2 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm" title="Approve">
+                          <Check size={16} strokeWidth={3}/>
+                        </button>
+                        <button className="bg-red-50 text-red-600 p-2 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm" title="Reject">
+                          <X size={16} strokeWidth={3}/>
+                        </button>
+                        <button className="bg-gray-100 text-[#103c7f] p-2 rounded-lg hover:bg-[#103c7f] hover:text-white transition-all shadow-sm" title="View Bill Proof">
+                          <FileText size={16} strokeWidth={2}/> 
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -157,13 +199,15 @@ export default function ManagerApprovals() {
         </div>
         
         {/* Footer */}
-        <div className="bg-[#103c7f] p-5 flex justify-between items-center text-white">
+        <div className="bg-gray-50 p-3 border-t border-gray-100 flex justify-between items-center text-[#103c7f] shrink-0">
            <div className="flex items-center gap-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">My Team: 4 FSEs</p>
-              <div className="h-3 w-px bg-white/20"></div>
-              <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Pending: 4 Claims</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">My Team: 12 FSEs</p>
+              <div className="h-3 w-px bg-gray-300"></div>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">
+                Action Req: {approvals.filter(a => a.status !== 'Sent to HR').length} Claims
+              </p>
            </div>
-           <p className="text-[10px] font-black uppercase tracking-widest text-[#a1db40]">Total Approval Value: ₹7,800</p>
+           <p className="text-[10px] font-black uppercase tracking-widest">Total Approval Value: <span className="text-lg italic">₹22,550</span></p>
         </div>
       </div>
     </div>

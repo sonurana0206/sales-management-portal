@@ -100,6 +100,7 @@ export default function FSEDashboard() {
 
   if (!mounted) return null;
 
+  
   return (
     <div className="p-1 bg-[#f8fafc] font-['Calibri'] h-full text-slate-800 flex flex-col">
       <div className="max-w-8xl mx-auto space-y-4 w-full">
@@ -113,39 +114,93 @@ export default function FSEDashboard() {
 
         {/* --- ROW 2: KPIs & PROJECTION --- */}
         {/* Fixed: h-21 invalid tha, h-28 kiya. items-stretch rakha taaki height same rahe */}
-        <div className="flex flex-col lg:flex-row gap-3 h-auto lg:h-28 mb-4">
+        <div className="flex flex-col lg:flex-row gap-3  mb-4 items-stretch">
           
           {/* 1. Month Indicator */}
-          <div className="bg-[#103c7f] rounded-xl flex flex-col items-center justify-center w-12 shadow-sm shrink-0 py-2 hidden lg:flex">
+          <div className="bg-[#103c7f] rounded-xl flex flex-col items-center justify-center w-10 shadow-sm shrink-0 py-1 hidden lg:flex">
             <div className="flex flex-col items-center leading-[1.1] text-white font-black text-[16px] uppercase tracking-tighter">
               {currentMonth.split("").map((char, i) => <span key={i}>{char}</span>)}
             </div>
           </div>
 
           {/* 2. KPIs (Fixed: Removed min-w-300px from children to prevent overflow) */}
-          <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3"> 
-            <CompactMonthCard label="Total Visit" value={stats.monthly.visitTarget} icon={<TrendingUp size={16} />} />
-            <CompactMonthCard label="Individual Visit" value={stats.monthly.individualVisits} icon={<Users size={16} />} />
-            <CompactMonthCard label="Onboard (MTD/MP)" value={stats.monthly.onboardMtd} icon={<CheckCircle size={16} />} />
-            <CompactMonthCard label="Avg Visit" value="pending" icon={<Activity size={16} />} />
+          <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2"> 
+          {/* CARD 1: Total Visit (Ab Goal Bhi Dikhega) */}
+            {/* CARD 1: Total Visit (Target Always Visible) */}
+            <CompactMonthCard 
+                label="Total Visit" 
+                value={stats.monthly.visitTarget} 
+                icon={<TrendingUp size={16} />}
+                
+                // 👇 CHANGE: Agar '/Target' nahi mila, tab bhi "0" dikhao (Goal kabhi gayab nahi hoga)
+                target={(() => {
+                    if (!stats.monthly.visitTarget) return "0"; // Default 0
+                    const parts = stats.monthly.visitTarget.toString().split('/');
+                    // Agar slash ke baad value hai toh wo lo, nahi toh "0" dikhao
+                    return parts[1] ? parts[1] : "0"; 
+                })()}
+
+                // Progress Bar Logic (Safe Check)
+                progress={(() => {
+                    if (!stats.monthly.visitTarget) return 0;
+                    const parts = stats.monthly.visitTarget.toString().split('/');
+                    const curr = Number(parts[0]);
+                    const total = parts[1] ? Number(parts[1]) : 0; // Agar total nahi hai to 0
+                    return total ? (curr / total) * 100 : 0;
+                })()}
+                
+                trend="-1%" 
+            />    
+          {/* CARD 2: Individual Visits */}
+            <CompactMonthCard 
+                label="Individual Visit" 
+                value={stats.monthly.individualVisits} 
+                icon={<Users size={16} />} 
+                // No target, No progress, No trend passed here
+            />
+
+            {/* CARD 3: Onboard (String data "12/20") */}
+            <CompactMonthCard 
+                label="Onboard (MTD)" 
+                value={stats.monthly.onboardMtd} // e.g., "12/20"
+                icon={<CheckCircle size={16} />} 
+                // Logic: Split "12/20"
+                target={(() => {
+                    const parts = stats.monthly.onboardMtd.toString().split('/');
+                    return parts[1] ? parts[1] : null; 
+                })()}
+                progress={(() => {
+                    const [curr, total] = stats.monthly.onboardMtd.toString().split('/').map(Number);
+                    return total ? (curr / total) * 100 : 0;
+                })()}
+                trend="+5%" // Dummy trend
+            />
+
+            {/* CARD 4: Avg Visit (Fixed "Pending") */}
+            <CompactMonthCard 
+                label="Avg Visit" 
+                value={stats.monthly.avgVisit || "0.0"} 
+                icon={<Activity size={16} />} 
+                // No target, No progress passed here as per request
+            />
           </div>
 
           {/* 3. Projection Card */}
-          <div className="flex-1 bg-[#103c7f] rounded-xl p-3 text-white shadow-md flex flex-col justify-between shrink-0 relative overflow-hidden border border-white/5 min-h-[100px]">
-            <div className="flex justify-between items-center mb-1 px-1 relative z-10">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-[#a1db40]">Projection</h3>
+          <div className="w-full lg:w-[350px] bg-[#103c7f] rounded-xl p-1 text-white shadow-md flex flex-col justify-center relative overflow-hidden border border-white/5 shrink-0">
+            <div className="flex justify-between items-center mb-2 px-1 relative z-10">
+              <h3 className="text-[12px] font-black uppercase tracking-widest text-[#a1db40]">Projection</h3>
               <Target size={12} className="opacity-30" />
             </div>
 
             {/* Fixed: Grid gap logic */}
-            <div className="grid grid-cols-2 gap-x-12 gap-y-2 px-2 relative z-10">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 px-1 relative z-10">
                {/* Corrected Props passing */}
                <ProjItem label="MP < 50" value={stats.projections.mpLess50} />
                <ProjItem label="MP > 50" value={stats.projections.mpGreater50} />
                <ProjItem label="WP < 50" value={stats.projections.wpLess50} />
                <ProjItem label="WP > 50" value={stats.projections.wpGreater50} />
             </div>
-            <Target size={60} className="absolute -right-4 -bottom-4 opacity-5 rotate-12" />
+            <Target size={50} className="absolute -right-3 -bottom-3 opacity-5 rotate-12" />
           </div>
         </div>
 
@@ -175,13 +230,13 @@ export default function FSEDashboard() {
 
         {/* --- ROW 5: SCROLLABLE TABLE (FIXED) --- */}
         {/* Fixed Height applied here */}
-        <div className="h-[250px] bg-white rounded-[1rem] border border-gray-100 shadow-xl overflow-hidden flex flex-col mb-4"> 
-          <div className="px-6 py-3 border-b border-gray-50 flex items-center justify-between bg-[#103c7f]/5 shrink-0">
+        <div className="h-[300px] bg-white rounded-[1rem] border border-gray-100 shadow-xl overflow-hidden flex flex-col mb-4"> 
+          {/*<div className="px-6 py-3 border-b border-gray-50 flex items-center justify-between bg-[#103c7f]/5 shrink-0">
              <h3 className="text-[#103c7f] font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2">
                 <Users size={14} className="text-[#a1db40]" /> Client Details
              </h3>
              <span className="text-[8px] font-bold text-gray-400 uppercase italic">{stats.clients.length} Records</span>
-          </div>
+          </div>*/}
 
           <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-white">
             <table className="w-full text-left border-separate border-spacing-0">
@@ -192,14 +247,14 @@ export default function FSEDashboard() {
                   <th className="px-6 py-3 text-[10px] uppercase font-black text-gray-400 tracking-wider border-b border-gray-100 bg-white text-right">Substatus</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-100">
                 {stats.clients.map((client, idx) => (
-                  <tr key={idx} className="hover:bg-blue-50/40 transition-all group">
-                    <td className="px-6 py-3 text-xs font-bold text-slate-700">{client.name} </td>
-                    <td className="px-6 py-3 text-center">
+                  <tr key={idx} className="hover:bg-blue-50 transition-all group">
+                    <td className="px-6 py-2 text-xs font-bold text-slate-700">{client.name} </td>
+                    <td className="px-6 py-2 text-center">
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter ${client.color}`}>{client.status}</span>
                     </td>
-                    <td className="px-6 py-3 text-[10px] font-bold text-gray-400 italic text-right group-hover:text-[#103c7f]">{client.sub}</td>
+                    <td className="px-6 py-2 text-[10px] font-bold text-gray-400 italic text-right group-hover:text-[#103c7f]">{client.sub}</td>
                   </tr>
                 ))}
               </tbody>
@@ -219,23 +274,59 @@ function StatCard({ title, value, icon, accentColor, bgColor }) {
       <div className={`p-2.5 rounded-lg ${bgColor} ${accentColor} shrink-0`}>{icon}</div>
       <div className="min-w-0">
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] mb-0.5 truncate">{title}</p>
-        <p className="text-xl font-black text-slate-800 leading-none">{value.toLocaleString()}</p>
+        <p className="text-xl font-black text-slate-800 leading-none">{(value || 0).toLocaleString()}</p>
       </div>
     </div>
   );
 }
 
 // Fixed: Removed min-w-[300px] which was breaking the grid
-function CompactMonthCard({ label, value, icon }) {
+function CompactMonthCard({ label, value, icon, trend, progress, target }) {
+  // Logic to determine color
+  const isPositive = trend && trend.includes("+");
+  const trendColor = isPositive ? "text-emerald-600 bg-emerald-50" : "text-red-600 bg-red-50";
+  const trendIcon = isPositive ? "↑" : "↓";
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm flex items-center gap-3 h-full w-full">
-      <div className="w-8 h-8 rounded-lg bg-[#103c7f]/10 flex items-center justify-center text-[#103c7f] shrink-0">
-        {React.cloneElement(icon, { size: 16 })}
+    // 👇 CHANGED: p-4 to p-2.5 (Less padding = Less height)
+    <div className="bg-white border border-gray-200 rounded-xl p-2.5 shadow-sm flex flex-col justify-between h-full w-full relative overflow-hidden group hover:shadow-md transition-all">
+      
+      {/* Top Row: Icon, Label & Trend */}
+      <div className="flex justify-between items-start mb-1"> {/* Reduced mb-2 to mb-1 */}
+        <div className="flex items-center gap-2">
+           {/* 👇 CHANGED: w-10 h-10 to w-8 h-8 (Smaller Icon Box) */}
+           <div className="w-8 h-8 rounded-lg bg-[#103c7f]/10 flex items-center justify-center text-[#103c7f] shrink-0 group-hover:bg-[#103c7f] group-hover:text-white transition-colors">
+             {React.cloneElement(icon, { size: 18 })} {/* Icon size reduced to 16 */}
+           </div>
+           
+           <div className="flex flex-col min-w-0">
+             <span className="text-[12px] font-bold text-gray-400 uppercase tracking-wide truncate">{label}</span>
+             {target && <span className="text-[10px] font-semibold text-gray-300 leading-none mt-0.5">Goal: {target}</span>}
+           </div>
+        </div>
+
+        {/* Trend Badge */}
+        {trend && (
+          <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-black ${trendColor} flex items-center leading-none`}>
+            {trendIcon} {trend}
+          </span>
+        )}
       </div>
-      <div className="flex flex-col min-w-0">
-        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wide truncate">{label}</span>
-        <span className="text-base font-black text-[#103c7f] leading-tight">{value}</span>
+
+      {/* Middle: Big Value */}
+      <div className="mt-0.5">
+        <span className="text-2xl font-black text-[#103c7f] leading-none tracking-tight">{value}</span>
       </div>
+
+      {/* Bottom: Progress Bar */}
+      {progress !== undefined && (
+        <div className="mt-2 w-full bg-gray-100 h-1 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-[#103c7f] rounded-full transition-all duration-500" 
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+      )}
     </div>
   );
 }
@@ -253,7 +344,7 @@ function ProjItem({ label, value }) {
 function DynamicCard({ label, value, color }) {
   return (
     <div className={`bg-white p-3 rounded-xl border border-gray-100 border-l-4 ${color} shadow-sm text-center`}>
-      <p className="text-[9px] font-black text-gray-400 uppercase mb-1 truncate">{label}</p>
+      <p className="text-[12px] font-black text-gray-400 uppercase mb-1 truncate">{label}</p>
       <p className="text-lg font-black text-[#103c7f]">{value}</p>
     </div>
   );
@@ -261,9 +352,15 @@ function DynamicCard({ label, value, color }) {
 
 function DateInput({ label, value, onChange }) {
     return (
-        <div className="flex items-center bg-gray-50 border rounded-xl px-3 py-2 gap-2">
-            <span className="text-[10px] font-black text-gray-400 uppercase">{label}</span>
-            <input type="date" value={value} onChange={(e) => onChange(e.target.value)} className="bg-transparent text-xs font-bold outline-none" />
+        <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 gap-2 hover:border-[#103c7f]/30 transition-colors cursor-pointer group">
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider group-hover:text-[#103c7f] transition-colors">{label}</span>
+            {/* Added cursor-pointer and improved text style */}
+            <input 
+              type="date" 
+              value={value} 
+              onChange={(e) => onChange(e.target.value)} 
+              className="bg-transparent text-xs font-bold text-[#103c7f] outline-none cursor-pointer uppercase" 
+            />
         </div>
     )
 }
